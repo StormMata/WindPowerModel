@@ -1,13 +1,13 @@
-clearvars -except AeroDyn A Output Hannah HannahSS SSs SSsn speed uRel vRel Hphi aoa Hchord Htwist Hpower HW sweep
+clearvars -except AeroDyn A Output Hannah HannahSS SSs SSsn speed uRel vRel Hphi aoa Hchord Htwist Hpower
 clc
 
 speed = -0.1:0.01:0.7;
 
-% for s = 1:length(speed)
+for s = 1:length(speed)
 
 inc     = 0;
-Palpha  = 0.0;
-% Palpha  = speed(s);
+% Palpha  = 0.0;
+Palpha  = speed(s);
 
 z       = (104+63:-1:104-63)';
 % beta    = linspace(12.6,-12.6,length(z))';
@@ -50,8 +50,6 @@ for j = 1:length(azimuth)
 
         U_tan(i)= (Omega * r(i) - U*(1-a(i)) * cos(betar * sin(azimuth(j))) * sin(betar * cos(azimuth(j))));
     
-        Wm(i)  = (U_axi(i)/11.4)^2 + (U_tan(i)/11.4)^2;
-
         W(i)   = U_axi(i)^2 + U_tan(i)^2;
     
         Phi(i) = atan2(U_axi(i), U_tan(i));
@@ -65,7 +63,6 @@ for j = 1:length(azimuth)
 
         dQ(i)  = 3 * 0.5 * rho * c * W(i) * r(i) * (CL(i) * sin(Phi(i)) - CD(i) * cos(Phi(i)));
     
-        dQm(i) = c/63 * r(i)/63 * Wm(i) * (CL(i) * sin(Phi(i)) - CD(i) * cos(Phi(i)))
     end
 
     dQ    = trapz(r,dQ);
@@ -74,10 +71,10 @@ for j = 1:length(azimuth)
 
 end
 
-trapz(azimuth,dP)/(2*pi)
-% sweep(s) = trapz(azimuth,dP)/(2*pi);
+% trapz(azimuth,dP)/(2*pi)
+sweep(s) = trapz(azimuth,dP)/(2*pi);
 
-% end
+end
 
 % figure;
 % subplot(2,2,[1 2])
@@ -160,7 +157,7 @@ trapz(azimuth,dP)/(2*pi)
 %         xlabel('r (m)')
 %         ylabel('Percent Difference (%)')
 %         xlim([min(r) max(r)])
-% % 
+% 
 % figure;
 % subplot(2,2,[1 2])
 %     plot(r,AeroDyn.Twist,'b','LineWidth',1.5)
@@ -177,34 +174,18 @@ trapz(azimuth,dP)/(2*pi)
 %         ylabel('Percent Difference (%)')
 %         xlim([min(r) max(r)])
 
-% figure;
-% subplot(2,2,[1 2])
-%     plot(r,W,'b','LineWidth',1.5)
-%         hold on
-%     plot(r,HW,'r','LineWidth',1.5)
-%         title('U_{rel}^2')
-%         legend('Storm','Hannah','Location','northwest')
-%         xlabel('r (m)')
-%         ylabel('U_{rel}^2 (m^2/s^2)')
-%         xlim([min(r) max(r)])
-% subplot(2,2,[3 4])
-%     plot(r, 100 * (W - HW)./((W + HW)/2),'LineWidth',1.5)
-%         xlabel('r (m)')
-%         ylabel('Percent Difference (%)')
-%         xlim([min(r) max(r)])
-% 
 figure;
 subplot(2,2,[1 2])
     plot(speed,sweep,'b','LineWidth',1.5)
         hold on
     plot(speed,Hpower,'r','LineWidth',1.5)
         title('Power')
-        legend('Storm','Hannah','Location','northwest')
+        legend('Storm','Hannah','Location','northeast')
         xlabel('Speed Shear Exponent (\alpha)')
         ylabel('Power (MW)')
-        xlim([min(speed) max(speed)])
+%         xlim([min(r) max(r)])
 subplot(2,2,[3 4])
     plot(speed, 100 * (sweep - Hpower)./((sweep + Hpower)/2),'LineWidth',1.5)
         xlabel('Speed Shear Exponent (\alpha)')
         ylabel('Percent Difference (%)')
-        xlim([min(speed) max(speed)])
+        xlim([min(r) max(r)])
