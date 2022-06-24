@@ -1,9 +1,9 @@
-clearvars -except reserve AeroDyn A Output Hannah HannahSS SSs SSsn speed uRel vRel Hphi aoa Hchord Htwist Hpower HW sweep Hcl Hcd Hr t0 tn2  test
+clearvars -except reserve AeroDyn A Output Hannah HannahSS SSs SSsn speed uRel vRel Hphi aoa Hchord Htwist Hpower HW sweep Hcl Hcd Hr
 clc
 
 load('Airfoils.mat')                                                        % Load airfoil parameters
 
-speed = -0.2:0.1:-0.2;
+speed = -0.0:0.1:0.0;
 
 for s = 1:length(speed)
     s
@@ -209,21 +209,21 @@ end
 %         ylabel('Percent Difference (%)')
 %         xlim([min(r) max(r)])
 
-figure;
-subplot(2,2,[1 2])
-    plot(r,CL,'b','LineWidth',1.5)
-        hold on
-    plot(Hr*63,test(1,:),'r','LineWidth',1.5)
-        title('Lift Coefficient')
-        legend('Storm','Hannah','Location','northwest')
-        xlabel('r (m)')
-        ylabel('CL (-)')
-        xlim([min(r) max(r)])
-subplot(2,2,[3 4])
-    plot(r, 100 * (CL - test(1,:))./((CL + test(1,:))/2),'LineWidth',1.5)
-        xlabel('r (m)')
-        ylabel('Percent Difference (%)')
-        xlim([min(r) max(r)])
+% figure;
+% subplot(2,2,[1 2])
+%     plot(r,CL,'b','LineWidth',1.5)
+%         hold on
+%     plot(Hr*63,Hcl,'r','LineWidth',1.5)
+%         title('Lift Coefficient')
+%         legend('Storm','Hannah','Location','northwest')
+%         xlabel('r (m)')
+%         ylabel('CL (-)')
+%         xlim([min(r) max(r)])
+% subplot(2,2,[3 4])
+%     plot(r, 100 * (CL - Hcl)./((CL + Hcl)/2),'LineWidth',1.5)
+%         xlabel('r (m)')
+%         ylabel('Percent Difference (%)')
+%         xlim([min(r) max(r)])
 % 
 % figure;
 % subplot(2,2,[1 2])
