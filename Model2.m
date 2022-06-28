@@ -1,4 +1,4 @@
-clearvars -except reserve I AeroDyn A Output Hannah HannahSS SSs SSsn speed uRel vRel Hphi aoa Hchord Htwist Hpower HW sweep
+clearvars -except Hannah HannahSS speed uRel vRel Hphi aoa Hchord Htwist Hpower HW sweep I
 % clc
 
 addpath(['/Users/stormmata/Library/Mobile Documents/com~apple~CloudDocs/' ...
@@ -8,8 +8,8 @@ addpath(['/Users/stormmata/Library/Mobile Documents/com~apple~CloudDocs/' ...
 
 load('Turbine.mat')                                                         % Load turbine parameters
 
-% load('Airfoils.mat')                                                        % Load airfoil parameters
-A=reserve;
+load('Airfoils.mat')                                                        % Load airfoil parameters
+
 load('WindProfiles.mat')                                                    % Load atmospheric conditions
 
 %% Interpolate Blade Parameters
@@ -24,13 +24,22 @@ load('WindProfiles.mat')                                                    % Lo
 
 %% Mesh Rotor Area
 
-spacing = 1;
+spacing = 0.5;
 
 [ycoords,zcoords] = meshgrid(-T.R:spacing:T.R,(T.Hub+T.R):-spacing:(T.Hub-T.R));          % Generate grid of points in cartesian coordinates
 
-[azimuth,R]       = cart2pol(ycoords,zcoords-T.Hub);                        % Convert to polar coordinates
+[azimuth,R]       = cart2pol(ycoords,(zcoords-T.Hub));                        % Convert to polar coordinates
 
 azimuth           = fliplr(mod(azimuth - pi/2,2*pi));                       % Fix azimuth angle 0 position
+
+% spacing = 1/0.5;
+% N = 128;
+% 
+% [ycoords,zcoords] = meshgrid(linspace(-1,1,N*2+1),linspace(1,-1,N*2+1));          % Generate grid of points in cartesian coordinates
+% 
+% [azimuth,R]       = cart2pol(ycoords,zcoords);                        % Convert to polar coordinates
+% 
+% azimuth           = fliplr(mod(azimuth - pi/2,2*pi));                       % Fix azimuth angle 0 position
 
 %% Generate Freestream Velocity Field
 
@@ -40,6 +49,7 @@ rho       = 1.225;
 for i = 1:size(I.SpeedShear,2)
     i
 
+U_Hub     = interp1(I.Heights,I.SpeedShear(:,i),T.Hub,'linear');
 U         = interp1(I.Heights,I.SpeedShear(:,i),((T.Hub+T.R):-spacing:(T.Hub-T.R))','linear') .* ones(size(azimuth));
 
 LocYaw    = deg2rad(interp1(I.Heights,I.DirShear(:,i),((T.Hub+T.R):-spacing:(T.Hub-T.R))','linear') .* ones(size(azimuth)));
@@ -77,10 +87,18 @@ InnerFilter  = R <= T.R;   % Only capture values within the outer rotor radius
 
 P = P .* OutterFilter .* InnerFilter;
 
+area = sum(OutterFilter .* InnerFilter, 'all') * spacing^2
+
 ri     = linspace(1.5,T.R,length(R));
 thetai = linspace(0,2*pi,length(R));
 
 Power(i) = trapz(thetai,trapz(ri,P,2))/(2*pi);
+Power(i) = trapz(1:length(R),trapz(1:length(R),P,2))/(pi*T.R^2-pi*T.R_hub^2);
+Power(i) = sum(P,'all')/(2*pi);
+trapz(1:length(R),trapz(1:length(R),P,2))/(2*pi)
+trapz(trapz(P))/area
+% Power(i) = trapz(thetai,trapz(ri,P,2))/(pi*T.R^2-pi*T.R_hub^2);
+% Power(i) = sum(P,'all')/(pi*T.R^2-pi*T.R_hub^2);
 
 end
 
@@ -111,3 +129,9 @@ end
 % axis equal
 % plot(0:63,Cint,'r')
 
+figure;
+surf(ycoords(1,:),zcoords(:,1),P,'EdgeColor','none')
+xlim([min(min(ycoords)) max(max(ycoords))])
+ylim([min(min(zcoords)) max(max(zcoords))])
+xlabel('y (m)')
+ylabel('z (m)')

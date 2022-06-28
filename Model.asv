@@ -1,9 +1,9 @@
-clearvars -except reserve AeroDyn A Output Hannah HannahSS SSs SSsn speed uRel vRel Hphi aoa Hchord Htwist Hpower HW sweep Hcl Hcd Hr
+clearvars -except P Q AeroDyn A Output Hannah HannahSS SSs SSsn speed uRel vRel Hphi aoa Hchord Htwist Hpower HW sweep Hcl Hcd Hr t0 tn2  test
 clc
 
 load('Airfoils.mat')                                                        % Load airfoil parameters
 
-speed = -0.0:0.1:0.0;
+speed = -0.0:0.1:-0.0;
 
 for s = 1:length(speed)
     s
@@ -24,7 +24,7 @@ beta    = beta - B2;
 yaw     = 0.0;
 azimuth = linspace(0,2 * pi,50);
 % U       = 11.4;% * (1 - 1/3);
-r       = linspace(1.5,63,100);
+r       = linspace(0,63,64);
 Omega   = (12.1 * 2 * pi)/(60);
 rho     = 1.225;
 A_po    = 0;                                                            % Pitch angle                   [rad]
@@ -34,7 +34,6 @@ R_rot   = 63;
 % a       = Output(:,2);
 % a       = [a' a(end) a(end)];
 a       = 1/3 * ones(1, length(r));
-A=reserve;
 
 
 for j = 1:length(azimuth)
@@ -80,7 +79,7 @@ for j = 1:length(azimuth)
 %         CD(i) = Hcd(i);
 
         dQ(i)  = 3 * 0.5 * rho * c(i) * W(i) * r(i) * (CL(i) * sin(Phi(i)) - CD(i) * cos(Phi(i)));
-    
+%         dPt = dQ * Omega
 %         dQm(i) = c/63 * r(i)/63 * Wm(i) * (CL(i) * sin(Phi(i)) - CD(i) * cos(Phi(i)))
     end
 
@@ -213,14 +212,14 @@ end
 % subplot(2,2,[1 2])
 %     plot(r,CL,'b','LineWidth',1.5)
 %         hold on
-%     plot(Hr*63,Hcl,'r','LineWidth',1.5)
+%     plot(Hr*63,test(1,:),'r','LineWidth',1.5)
 %         title('Lift Coefficient')
 %         legend('Storm','Hannah','Location','northwest')
 %         xlabel('r (m)')
 %         ylabel('CL (-)')
 %         xlim([min(r) max(r)])
 % subplot(2,2,[3 4])
-%     plot(r, 100 * (CL - Hcl)./((CL + Hcl)/2),'LineWidth',1.5)
+%     plot(r, 100 * (CL - test(1,:))./((CL + test(1,:))/2),'LineWidth',1.5)
 %         xlabel('r (m)')
 %         ylabel('Percent Difference (%)')
 %         xlim([min(r) max(r)])

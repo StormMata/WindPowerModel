@@ -1,18 +1,25 @@
-clearvars -except reserve AeroDyn A Output Hannah HannahSS SSs SSsn speed uRel vRel Hphi aoa Hchord Htwist Hpower HW sweep Hcl Hcd Hr t0 tn2  test
+clearvars -except dir hz hb z beta afind diff Storm P Q AeroDyn A Output Hannah HannahSS SSs SSsn speed uRel vRel Hphi aoa Hchord Htwist Hpower HW sweep Hcl Hcd Hr t0 tn2  test
 clc
+
+%% Inputs
+
+load('Turbine.mat')                                                         % Load turbine parameters
 
 load('Airfoils.mat')                                                        % Load airfoil parameters
 
-speed = -0.2:0.1:-0.2;
+load('WindProfiles.mat')                                                    % Load atmospheric conditions
+
+
+speed = -0.1:0.1:0.7;
 
 for s = 1:length(speed)
     s
 
-inc     = 0;
+inc     = 0.6;
 % Palpha  = 0.0;
 Palpha  = speed(s);
 
-z       = (104+63:-1:104-63)';
+z       = (90+63:-1:90-63)';
 % beta    = linspace(12.6,-12.6,length(z))';
 beta    = flip(0 + inc * (0:length(z)-1)');
 H2      = ceil(length(z)/2);
@@ -34,7 +41,8 @@ R_rot   = 63;
 % a       = Output(:,2);
 % a       = [a' a(end) a(end)];
 a       = 1/3 * ones(1, length(r));
-A=reserve;
+
+%         AeroIndex = afind+1;
 
 
 for j = 1:length(azimuth)
@@ -43,11 +51,15 @@ for j = 1:length(azimuth)
 
 %         U      = 11.4 * ((104 + r(i) * cos(azimuth(j)))/(104))^0.2;
 
-        zloc   = round(104 + r(i) * cos(azimuth(j)),0);
+        zloc   = round(90 + r(i) * cos(azimuth(j)),0);
 
-        betaind= find(zloc==z);
+        betar = deg2rad(interp1(z,beta,zloc,'linear','extrap'));
 
-        betar  = deg2rad(beta(betaind));
+%         zloc   = round(90 + r(i) * cos(azimuth(j)),0);
+
+%         betaind= find(zloc==z);
+
+%         betar  = deg2rad(beta(betaind));
 
         U      = 11.4 * ((90 + r(i) * cos(azimuth(j)))/(90))^Palpha;
 
@@ -80,7 +92,7 @@ for j = 1:length(azimuth)
 %         CD(i) = Hcd(i);
 
         dQ(i)  = 3 * 0.5 * rho * c(i) * W(i) * r(i) * (CL(i) * sin(Phi(i)) - CD(i) * cos(Phi(i)));
-    
+%         dPt = dQ * Omega
 %         dQm(i) = c/63 * r(i)/63 * Wm(i) * (CL(i) * sin(Phi(i)) - CD(i) * cos(Phi(i)))
     end
 
@@ -94,6 +106,8 @@ end
 sweep(s) = trapz(azimuth,dP)/(2*pi);
 
 end
+
+Storm = [sweep; Storm]
 
 % figure;
 % subplot(2,2,[1 2])
@@ -209,21 +223,21 @@ end
 %         ylabel('Percent Difference (%)')
 %         xlim([min(r) max(r)])
 
-figure;
-subplot(2,2,[1 2])
-    plot(r,CL,'b','LineWidth',1.5)
-        hold on
-    plot(Hr*63,test(1,:),'r','LineWidth',1.5)
-        title('Lift Coefficient')
-        legend('Storm','Hannah','Location','northwest')
-        xlabel('r (m)')
-        ylabel('CL (-)')
-        xlim([min(r) max(r)])
-subplot(2,2,[3 4])
-    plot(r, 100 * (CL - test(1,:))./((CL + test(1,:))/2),'LineWidth',1.5)
-        xlabel('r (m)')
-        ylabel('Percent Difference (%)')
-        xlim([min(r) max(r)])
+% figure;
+% subplot(2,2,[1 2])
+%     plot(r,CL,'b','LineWidth',1.5)
+%         hold on
+%     plot(Hr*63,test(1,:),'r','LineWidth',1.5)
+%         title('Lift Coefficient')
+%         legend('Storm','Hannah','Location','northwest')
+%         xlabel('r (m)')
+%         ylabel('CL (-)')
+%         xlim([min(r) max(r)])
+% subplot(2,2,[3 4])
+%     plot(r, 100 * (CL - test(1,:))./((CL + test(1,:))/2),'LineWidth',1.5)
+%         xlabel('r (m)')
+%         ylabel('Percent Difference (%)')
+%         xlim([min(r) max(r)])
 % 
 % figure;
 % subplot(2,2,[1 2])
