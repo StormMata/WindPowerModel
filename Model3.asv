@@ -13,10 +13,8 @@ load('Airfoils.mat')                                                        % Lo
 % load('Uniform_Rated.mat')                                                   % Load atmospheric conditions
 % load('R2_Sweep.mat')                                                        % Load atmospheric conditions
 
-% sp = ('/Users/stormmata/Library/Mobile Documents/com~apple~CloudDocs/Courses/Research/WindPowerModel/5 MW Turbine/DShear Sensitivity');
-sp = ('/Users/stormmata/Library/Mobile Documents/com~apple~CloudDocs/Courses/Research/WindPowerModel/5 MW Turbine/TSR Sensitivity');
-addpath(sp)
-fname = ('TSRsweep_U9.mat');
+sp = ('/Users/stormmata/Library/Mobile Documents/com~apple~CloudDocs/Courses/Research/WindPowerModel/5 MW Turbine/DShear Sensitivity');
+fname = ('DSsweep_Tangent.mat');
 load(fname)
 
 %% Calculate
@@ -105,6 +103,7 @@ AB = figure;
     title(fname, 'Interpreter', 'none');
     savefig(AB,sprintf('%s/%s_%s',sp,erase(fname,'.mat'),'AB'))
 
+
 AB_LH = figure;
     imagesc(speed(1,:),direc(:,1),P_LH)
     axis xy
@@ -142,26 +141,4 @@ AB_surf = figure;
 % axis equal
 % view(gca,0,90)
 
-% %% Make Direction Shear Plot
-% 
-% Dplot = figure;
-%     plot(I.DirShear(:,[1 10 19 27 37 41 51 61 71]),I.Heights)
-%     hold on
-%     yline(T.Hub+T.R)
-%     yline(T.Hub-T.R)
-%     title(fname, 'Interpreter', 'none');
-%     savefig(Dplot,sprintf('%s/%s_%s',sp,erase(fname,'.mat'),'DShear'))
-%     legend('-0.1 deg/m','','','','','','','0.6 deg/m','Location','northwest')
-%     xlabel('Wind Direction (deg)')
-%     ylabel('z (m)')
-% 
-% Dplot = figure;
-%     plot(I.SpeedShear(:,1:10:71),I.Heights)
-%     hold on
-%     yline(T.Hub+T.R)
-%     yline(T.Hub-T.R)
-%     title(fname, 'Interpreter', 'none');
-%     savefig(Dplot,sprintf('%s/%s_%s',sp,erase(fname,'.mat'),'DShear'))
-%     legend('-0.1 deg/m','','','','','','','0.6 deg/m','Location','northwest')
-%     xlabel('Wind Direction (deg)')
-%     ylabel('z (m)')
+%% Make Direction Sh

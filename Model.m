@@ -12,25 +12,21 @@ load('WindProfiles.mat')                                                    % Lo
 
 speed = -0.1:0.1:0.7;
 
-for s = 1:length(speed)
-    s
+% for s = 1:length(speed)
+%     s
 
-inc     = 0.6;
-% Palpha  = 0.0;
-Palpha  = speed(s);
+inc     = 0.0;
+Palpha  = 0.0;
+% Palpha  = speed(s);
 
-z       = (90+63:-1:90-63)';
-% beta    = linspace(12.6,-12.6,length(z))';
+z       = (T.Hub+63:-1:T.Hub-63)';
 beta    = flip(0 + inc * (0:length(z)-1)');
 H2      = ceil(length(z)/2);
 B2      = beta(H2);
-% B1      = beta(T2 + 1)
-% mid     = abs(B1 + B2)/2
 beta    = beta - B2;
 
 yaw     = 0.0;
 azimuth = linspace(0,2 * pi,50);
-% U       = 11.4;% * (1 - 1/3);
 r       = linspace(1.5,63,100);
 Omega   = (12.1 * 2 * pi)/(60);
 rho     = 1.225;
@@ -38,76 +34,65 @@ A_po    = 0;                                                            % Pitch 
 B       = 3;                                                            % Number of blades              [-]
 R_hub   = 1.5;                                                          % Hub radius                    [m]
 R_rot   = 63;
-% a       = Output(:,2);
-% a       = [a' a(end) a(end)];
 a       = 1/3 * ones(1, length(r));
-
-%         AeroIndex = afind+1;
-
 
 for j = 1:length(azimuth)
 
     for i = 1:length(r)
 
-%         U      = 11.4 * ((104 + r(i) * cos(azimuth(j)))/(104))^0.2;
+        zloc           = round(T.Hub + r(i) * cos(azimuth(j)),0);
 
-        zloc   = round(90 + r(i) * cos(azimuth(j)),0);
+        betar          = deg2rad(interp1(z,beta,zloc,'linear','extrap'));
 
-        betar = deg2rad(interp1(z,beta,zloc,'linear','extrap'));
+%         U_Hub     = interp1(I.Heights,I.SpeedShear(:,i),T.Hub,'linear');
 
-%         zloc   = round(90 + r(i) * cos(azimuth(j)),0);
+        U(j,i)         = 11.4 * ((T.Hub + r(i) * cos(azimuth(j)))/(T.Hub))^Palpha;
 
-%         betaind= find(zloc==z);
+        U_axi(j,i)     = (U(j,i)*(1-a(i)) * cos(betar * sin(azimuth(j))) * cos(betar * cos(azimuth(j))));
 
-%         betar  = deg2rad(beta(betaind));
-
-        U      = 11.4 * ((90 + r(i) * cos(azimuth(j)))/(90))^Palpha;
-
-        U_axi(i)= (U*(1-a(i)) * cos(betar * sin(azimuth(j))) * cos(betar * cos(azimuth(j))));
-
-        U_tan(i)= (Omega * r(i) - U*(1-a(i)) * cos(betar * sin(azimuth(j))) * sin(betar * cos(azimuth(j))));
+        U_tan(j,i)     = (Omega * r(i) - U(j,i)*(1-a(i)) * cos(betar * sin(azimuth(j))) * sin(betar * cos(azimuth(j))));
     
-        Wm(i)  = (U_axi(i)/11.4)^2 + (U_tan(i)/11.4)^2;
-
-        W(i)   = U_axi(i)^2 + U_tan(i)^2;
+        W(j,i)         = U_axi(j,i)^2 + U_tan(j,i)^2;
     
-        Phi(i) = atan2(U_axi(i), U_tan(i));
+        Phi(j,i)       = atan2(U_axi(j,i), U_tan(j,i));
     
-%         c      = AeroDyn.Chord(i);
-        c(i)      = interp1(AeroDyn.r,AeroDyn.Chord,r(i),'linear','extrap');
+        c(j,i)         = interp1(AeroDyn.r,AeroDyn.Chord,r(i),'linear','extrap');
 
-        Twist(i)     = interp1(AeroDyn.r,AeroDyn.Twist,r(i),'linear','extrap');
+        Twist(j,i)     = interp1(AeroDyn.r,AeroDyn.Twist,r(i),'linear','extrap');
     
-        alpha(i)  = rad2deg(Phi(i)) - Twist(i);
+        alpha(j,i)     = rad2deg(Phi(j,i)) - Twist(j,i);
 
-        AeroIndex(i) = interp1(AeroDyn.r,AeroDyn.AeroIndex,r(i),'nearest','extrap');      % Interpolated airfoil index        [-]
+        AeroIndex(j,i) = interp1(AeroDyn.r,AeroDyn.AeroIndex,r(i),'nearest','extrap');      % Interpolated airfoil index        [-]
 
-%         CL(i) = interp1(A.(sprintf('%s',AeroDyn.AeroID(i))).Alpha,A.(sprintf('%s',AeroDyn.AeroID(i))).CL,alpha(i),'linear');
-%         CD(i) = interp1(A.(sprintf('%s',AeroDyn.AeroID(i))).Alpha,A.(sprintf('%s',AeroDyn.AeroID(i))).CD,alpha(i),'linear');
+        CL(j,i)        = interp1(A.(sprintf('A%i',AeroIndex(j,i))).Alpha,A.(sprintf('A%i',AeroIndex(j,i))).CL,alpha(j,i),'linear');
+        CD(j,i)        = interp1(A.(sprintf('A%i',AeroIndex(j,i))).Alpha,A.(sprintf('A%i',AeroIndex(j,i))).CD,alpha(j,i),'linear');
 
-        CL(i) = interp1(A.(sprintf('A%i',AeroIndex(i))).Alpha,A.(sprintf('A%i',AeroIndex(i))).CL,alpha(i),'linear');
-        CD(i) = interp1(A.(sprintf('A%i',AeroIndex(i))).Alpha,A.(sprintf('A%i',AeroIndex(i))).CD,alpha(i),'linear');
+        dQ(j,i)        = 3 * 0.5 * rho * c(j,i) * W(j,i) * r(i) * (CL(j,i) * sin(Phi(j,i)) - CD(j,i) * cos(Phi(j,i)));
 
-%         CL(i) = Hcl(i);
-%         CD(i) = Hcd(i);
-
-        dQ(i)  = 3 * 0.5 * rho * c(i) * W(i) * r(i) * (CL(i) * sin(Phi(i)) - CD(i) * cos(Phi(i)));
-%         dPt = dQ * Omega
-%         dQm(i) = c/63 * r(i)/63 * Wm(i) * (CL(i) * sin(Phi(i)) - CD(i) * cos(Phi(i)))
     end
 
-    dQ    = trapz(r,dQ);
-
-    dP(j) = Omega * dQ;
-
 end
 
-% trapz(azimuth,dP)/(2*pi)
-sweep(s) = trapz(azimuth,dP)/(2*pi);
+% end
 
-end
+P = dQ * Omega;
 
-Storm = [sweep; Storm]
+trapz(r,trapz(azimuth,P,1))/(1e6*2*pi)
+
+[Ra Th] = meshgrid(r,azimuth);
+
+X = Ra.*sin(Th);
+Y = Ra.*cos(Th);
+
+P = figure;
+surf(X,Y+T.Hub,dQ,'LineStyle','none')
+xlabel('y (m)')
+ylabel('z (m)')
+axis equal
+view(gca,0,90)
+
+
+% Storm = [sweep; Storm]
 
 % figure;
 % subplot(2,2,[1 2])
@@ -286,3 +271,5 @@ Storm = [sweep; Storm]
 %         xlabel('Radial Position Index (-)')
 %         ylabel('Percent Difference (%)')
 %         xlim([1 63])
+
+
